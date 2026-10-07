@@ -19,11 +19,18 @@ const connectDB = async () => {
 
     console.log('Starting MongoDB Memory Server for zero-setup execution...');
     const { MongoMemoryServer } = require('mongodb-memory-server');
-    mongoServer = await MongoMemoryServer.create();
+    mongoServer = await MongoMemoryServer.create({
+      binary: {
+        version: '7.0.14'
+      }
+    });
     mongoUri = mongoServer.getUri();
 
     await mongoose.connect(mongoUri);
     console.log('MongoDB Memory Server connected at:', mongoUri);
+    if (process.env.NODE_ENV === 'production') {
+      console.warn('⚠️ WARNING: Running with in-memory MongoDB in production! Data will NOT persist across restarts. Please add MONGO_URI in your Render Environment settings.');
+    }
   } catch (error) {
     console.error('Error connecting to MongoDB:', error.message);
     process.exit(1);
