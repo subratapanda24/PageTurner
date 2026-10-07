@@ -59,7 +59,7 @@ app.get('/api/firebase-config', (req, res) => {
   res.json({
     configured: true,
     apiKey,
-    authDomain: `${projectId}.firebaseapp.com`,
+    authDomain: process.env.FIREBASE_AUTH_DOMAIN || `${projectId}.firebaseapp.com`,
     projectId,
     storageBucket: process.env.FIREBASE_STORAGE_BUCKET || `${projectId}.firebasestorage.app`,
     messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID || '',
@@ -120,4 +120,3 @@ const startServer = async () => {
 };
 
 startServer();
-

@@ -171,6 +171,7 @@ Copy `.env.example` to `.env` and configure:
 | `RAZORPAY_KEY_ID`         | Razorpay test/live key ID                | No**     |
 | `RAZORPAY_KEY_SECRET`     | Razorpay test/live key secret            | No**     |
 | `FIREBASE_PROJECT_ID`     | Firebase project ID                      | No***    |
+| `FIREBASE_AUTH_DOMAIN`    | Firebase web auth domain                 | No***    |
 | `FIREBASE_CLIENT_EMAIL`   | Firebase service account email           | No***    |
 | `FIREBASE_PRIVATE_KEY`    | Firebase service account private key     | No***    |
 | `FIREBASE_STORAGE_BUCKET` | Firebase storage bucket name             | No***    |
@@ -178,6 +179,10 @@ Copy `.env.example` to `.env` and configure:
 > \* Falls back to in-memory MongoDB (MongoMemoryServer) if MONGO_URI is unavailable  
 > \*\* Falls back to mock/sandbox payment mode if Razorpay keys are placeholders  
 > \*\*\* Falls back to local disk file upload if Firebase is not configured
+
+For Google Sign-In, add the domain you use to open the app to Firebase Console:
+Authentication → Settings → Authorized domains. For local development this is usually `localhost`;
+for deployment use your live host, for example `your-app.onrender.com`.
 
 ---
 
