@@ -77,6 +77,8 @@ async function signInWithGoogle() {
   } catch (err) {
     if (err.code === 'auth/popup-closed-by-user') {
       showToast('Sign-in cancelled.', 'error');
+    } else if (err.code === 'auth/operation-not-allowed') {
+      showToast('Google Sign-In is disabled in Firebase. Enable Google under Authentication > Sign-in method.', 'error');
     } else {
       showToast(err.message || 'Google Sign-In failed. Try again.', 'error');
     }
@@ -1153,16 +1155,22 @@ function updateAuthUI() {
   const title = document.getElementById('authTitle');
   const submitBtn = document.getElementById('authSubmitBtn');
   const toggleText = document.getElementById('authToggleText');
+  const googleText = document.querySelector('#googleSignInBtn span');
+  const dividerText = document.querySelector('.auth-divider span');
 
   if (authMode === 'register') {
     nameGroup.style.display = 'block';
     title.textContent = 'Create Account';
     submitBtn.textContent = 'Sign Up';
+    if (googleText) googleText.textContent = 'Sign up with Google';
+    if (dividerText) dividerText.textContent = 'or sign up with email';
     toggleText.innerHTML = `Already have an account? <a href="#" onclick="switchAuthMode('login')" style="color:var(--primary-coral); font-weight:700;">Sign in</a>`;
   } else {
     nameGroup.style.display = 'none';
     title.textContent = 'Sign In';
     submitBtn.textContent = 'Sign In';
+    if (googleText) googleText.textContent = 'Sign in with Google';
+    if (dividerText) dividerText.textContent = 'or sign in with email';
     toggleText.innerHTML = `Don't have an account? <a href="#" onclick="switchAuthMode('register')" style="color:var(--primary-coral); font-weight:700;">Sign up</a>`;
   }
 }
