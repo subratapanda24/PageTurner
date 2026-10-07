@@ -49,6 +49,25 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Firebase Web Config Endpoint (safe to expose - these are public client keys)
+app.get('/api/firebase-config', (req, res) => {
+  const apiKey = process.env.FIREBASE_WEB_API_KEY;
+  const projectId = process.env.FIREBASE_PROJECT_ID;
+  if (!apiKey || apiKey === 'YOUR_WEB_API_KEY_HERE' || !projectId) {
+    return res.json({ configured: false });
+  }
+  res.json({
+    configured: true,
+    apiKey,
+    authDomain: `${projectId}.firebaseapp.com`,
+    projectId,
+    storageBucket: process.env.FIREBASE_STORAGE_BUCKET || `${projectId}.firebasestorage.app`,
+    messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID || '',
+    appId: process.env.FIREBASE_APP_ID || '',
+    measurementId: process.env.FIREBASE_MEASUREMENT_ID || '',
+  });
+});
+
 // Download Postman Collection route
 app.get('/api/postman-collection', (req, res) => {
   const file = path.join(__dirname, '../postman_collection.json');

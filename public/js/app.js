@@ -1,5 +1,5 @@
 /**
- * BookHouse — Dashboard Application Logic
+ * PageTurner — Dashboard Application Logic
  * Matches the reference layout: Trending Books, Newly Added Books, Special Deals & Discounts table,
  * History, Favourites, Scheduled Drops (Live in 2 Days), search with categories, full auth, cart, orders, and reviews.
  */
@@ -11,6 +11,80 @@ let authMode = 'login';
 let selectedCategory = 'All';
 let allBooks = [];
 let pendingOrderData = null;
+
+// ─── FIREBASE AUTH INIT ───────────────────────────────────────
+let firebaseAuth = null;
+let googleProvider = null;
+let firebaseConfigured = false;
+
+async function initFirebase() {
+  try {
+    const res = await fetch('/api/firebase-config');
+    const config = await res.json();
+    if (!config.configured) {
+      console.info('Firebase not configured — Google Sign-In disabled.');
+      const btn = document.getElementById('googleSignInBtn');
+      if (btn) btn.style.display = 'none';
+      return;
+    }
+    firebase.initializeApp({
+      apiKey: config.apiKey,
+      authDomain: config.authDomain,
+      projectId: config.projectId,
+      storageBucket: config.storageBucket,
+      messagingSenderId: config.messagingSenderId,
+      appId: config.appId,
+      measurementId: config.measurementId,
+    });
+    firebaseAuth = firebase.auth();
+    googleProvider = new firebase.auth.GoogleAuthProvider();
+    googleProvider.addScope('email');
+    googleProvider.addScope('profile');
+    firebaseConfigured = true;
+    console.info('Firebase Auth initialized — Google Sign-In ready.');
+  } catch (err) {
+    console.warn('Firebase init failed:', err.message);
+    const btn = document.getElementById('googleSignInBtn');
+    if (btn) btn.style.display = 'none';
+  }
+}
+
+async function signInWithGoogle() {
+  if (!firebaseConfigured || !firebaseAuth) {
+    showToast('Google Sign-In is not configured. Please use email/password login.', 'error');
+    return;
+  }
+  const btn = document.getElementById('googleSignInBtn');
+  if (btn) { btn.disabled = true; btn.querySelector('span').textContent = 'Signing in...'; }
+
+  try {
+    // 1. Open Google popup via Firebase
+    const result = await firebaseAuth.signInWithPopup(googleProvider);
+    // 2. Get Firebase ID token
+    const idToken = await result.user.getIdToken();
+    // 3. Send ID token to our backend → backend verifies with Admin SDK → returns JWT
+    const data = await api('/auth/firebase', {
+      method: 'POST',
+      body: JSON.stringify({ idToken }),
+    });
+    // 4. Store user + JWT (same as email login)
+    currentUser = data;
+    authToken = data.token;
+    localStorage.setItem('pt_user', JSON.stringify({ user: currentUser, token: authToken }));
+    closeModal('authModal');
+    onLoginSuccess();
+    showToast(`Welcome, ${currentUser.name} 👋`);
+  } catch (err) {
+    if (err.code === 'auth/popup-closed-by-user') {
+      showToast('Sign-in cancelled.', 'error');
+    } else {
+      showToast(err.message || 'Google Sign-In failed. Try again.', 'error');
+    }
+  } finally {
+    if (btn) { btn.disabled = false; btn.querySelector('span').textContent = 'Sign in with Google'; }
+  }
+}
+
 
 const categoriesList = ['All', 'Finance', 'Self-Help', 'Tech', 'Fantasy', 'Fiction', 'Mystery'];
 let categoryIndex = 0;
@@ -197,6 +271,9 @@ const referenceMockBooks = {
 
 // ─── INITIALIZATION ───────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+  // Initialize Firebase Auth (Google Sign-In)
+  initFirebase();
+
   const saved = localStorage.getItem('pt_user');
   if (saved) {
     try {
