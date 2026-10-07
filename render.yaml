@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: pageturner-bookstore
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      # MONGO_URI, RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET, and FIREBASE credentials
+      # can be added via the Render dashboard Environment tab.

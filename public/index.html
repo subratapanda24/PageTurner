@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PageTurner — Online Bookstore &amp; Library</title>
+  <meta name="description" content="PageTurner online bookstore & library dashboard.">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</head>
+<body>
+
+<div class="app-container">
+  
+  <!-- ─── 1. LEFT SIDEBAR (PageTurner) ─── -->
+  <aside class="sidebar">
+    <div class="brand-header">
+      <div class="brand-icon">
+        <i class="fa-solid fa-book-open-reader"></i>
+      </div>
+      <div class="brand-title">
+        Page
+        <span>Turner</span>
+      </div>
+    </div>
+
+    <nav class="nav-group">
+      <div class="nav-link active" onclick="navigateTab('dashboard')">
+        <i class="fa-solid fa-house"></i>
+        <span>Dashboard</span>
+      </div>
+      <div class="nav-link" onclick="navigateTab('explore')">
+        <i class="fa-regular fa-compass"></i>
+        <span>Explore</span>
+      </div>
+      <div class="nav-link" onclick="openOrdersModal()">
+        <i class="fa-solid fa-book-bookmark"></i>
+        <span>Go to Library</span>
+      </div>
+      <div class="nav-link" onclick="openRecommendationsModal()">
+        <i class="fa-regular fa-lightbulb"></i>
+        <span>Recommendations</span>
+      </div>
+      <div class="nav-link" onclick="navigateTab('reviews')">
+        <i class="fa-regular fa-thumbs-up"></i>
+        <span>Reviews</span>
+      </div>
+      <div class="nav-link" onclick="openFavouritesModal()">
+        <i class="fa-regular fa-heart"></i>
+        <span>Favourites</span>
+      </div>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <div class="nav-link" id="adminSidebarBtn" onclick="openAdminModal()" style="display:none;">
+        <i class="fa-solid fa-shield-halved"></i>
+        <span>Admin Panel</span>
+      </div>
+      <div class="nav-link" onclick="openAuthModal('login')">
+        <i class="fa-solid fa-gear"></i>
+        <span>Settings</span>
+      </div>
+      <div class="nav-link" id="authNavAction" onclick="handleAuthAction()">
+        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+        <span id="authActionText">Log In</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ─── 2. MAIN VIEWPORT ─── -->
+  <main class="main-viewport">
+    
+    <!-- Top Search & User Info Bar -->
+    <header class="top-header-row">
+      <!-- Search with Categories dropdown & coral Search button -->
+      <div class="search-pill-container">
+        <input type="text" id="searchInput" placeholder="Search using Title or Author" onkeyup="handleSearch(event)">
+        <div class="search-category-divider"></div>
+        <div class="category-dropdown-btn" onclick="cycleCategoryFilter()">
+          <span id="selectedCategoryLabel">Categories</span>
+          <i class="fa-solid fa-chevron-down" style="font-size:0.7rem;"></i>
+        </div>
+        <button class="search-submit-btn" onclick="executeSearch()">Search</button>
+      </div>
+
+      <!-- Action badges & User Avatar -->
+      <div class="user-quick-profile">
+        <div class="header-action-badge" title="Notifications">
+          <i class="fa-regular fa-bell"></i>
+          <span class="badge-counter">1</span>
+        </div>
+
+        <div class="header-action-badge" onclick="toggleCartDrawer()" title="Shopping Cart">
+          <i class="fa-solid fa-cart-shopping"></i>
+          <span class="badge-counter" id="cartBadgeCount">0</span>
+        </div>
+
+        <div class="user-identity-card" onclick="openAuthModal('login')">
+          <div class="avatar-fallback" id="userAvatarElem">
+            <i class="fa-regular fa-user"></i>
+          </div>
+          <span class="user-name-label" id="userNameLabel">Joshua J</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- ─── 3. DASHBOARD WIDGETS (2 COLUMNS) ─── -->
+    <div class="dashboard-grid">
+      
+      <!-- LEFT COLUMN WIDGETS -->
+      <div class="grid-col">
+        
+        <!-- Widget 1: Trending Books (2 Large Highlighted Cards) -->
+        <section class="widget-box">
+          <div class="widget-header">
+            <h3>Trending Books</h3>
+            <span class="view-all-link" onclick="navigateTab('explore')">View all</span>
+          </div>
+
+          <div class="trending-books-row" id="trendingBooksRow">
+            <!-- Populated via JS: The psychology of Money + How Innovation Works -->
+          </div>
+        </section>
+
+        <!-- Widget 2: Newly Added Books (5 Mini Book Items) -->
+        <section class="widget-box">
+          <div class="widget-header">
+            <h3>Newly Added Books</h3>
+            <span class="view-all-link" onclick="navigateTab('explore')">View all</span>
+          </div>
+
+          <div class="newly-added-row" id="newlyAddedRow">
+            <!-- Populated via JS: 5 mini books -->
+          </div>
+        </section>
+
+        <!-- Widget 3: Special Deals & Discounts (Clean Project-Related Table) -->
+        <section class="widget-box">
+          <div class="widget-header">
+            <h3><i class="fa-solid fa-tags" style="color:var(--primary-coral);"></i> Special Deals &amp; Discounts</h3>
+            <span class="view-all-link" onclick="navigateTab('explore')">View all</span>
+          </div>
+
+          <table class="return-table deals-table">
+            <thead>
+              <tr>
+                <th>Featured Book</th>
+                <th>Offer</th>
+                <th style="text-align:right;">Deal Price</th>
+                <th style="text-align:right;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="dealsTableBody">
+              <!-- Populated via JS with active discounts -->
+            </tbody>
+          </table>
+        </section>
+
+      </div>
+
+      <!-- RIGHT COLUMN WIDGETS -->
+      <div class="grid-col">
+        
+        <!-- Widget 4: History (3 Book Covers) -->
+        <section class="widget-box">
+          <div class="widget-header">
+            <h3>History</h3>
+            <span class="view-all-link" onclick="openHistoryModal()">View all</span>
+          </div>
+
+          <div class="history-books-row" id="historyBooksRow">
+            <!-- Game of Thrones, Revenge, Harry Potter -->
+          </div>
+        </section>
+
+        <!-- Widget 5: Favourites (Heart icon + 4 covers) -->
+        <section class="widget-box">
+          <div class="widget-header">
+            <h3><i class="fa-solid fa-heart" style="color:#ff6b6b;"></i> Favourites</h3>
+            <span class="view-all-link" onclick="openFavouritesModal()">View all</span>
+          </div>
+
+          <div class="favourites-row" id="favouritesRow">
+            <!-- Populated via JS -->
+          </div>
+        </section>
+
+        <!-- Widget 6: Scheduled Drops (Live in 2 Days) -->
+        <section class="widget-box">
+          <div class="widget-header">
+            <h3><i class="fa-solid fa-clock-rotate-left" style="color:var(--primary-coral);"></i> Scheduled Drops <span class="badge-scheduled-header">Live in 2 Days</span></h3>
+            <span class="view-all-link" onclick="openScheduledDropsModal()">View all</span>
+          </div>
+
+          <div class="cart-widget-row" id="cartWidgetRow">
+            <!-- Scheduled release tiles populated via JS -->
+          </div>
+        </section>
+
+      </div>
+
+    </div>
+
+  </main>
+</div>
+
+<!-- ─── CART SLIDE-IN DRAWER ─── -->
+<div class="cart-overlay" id="cartOverlay" onclick="toggleCartDrawer()"></div>
+<aside class="cart-drawer" id="cartDrawer">
+  <div class="cart-drawer-header">
+    <h3>Shopping Cart</h3>
+    <button class="modal-close" onclick="toggleCartDrawer()" style="position:static;">&times;</button>
+  </div>
+  <div class="cart-drawer-body" id="cartDrawerBody">
+    <div class="cart-empty-message">
+      <i class="fa-solid fa-cart-shopping"></i>
+      Your cart is empty.
+    </div>
+  </div>
+  <div class="cart-drawer-footer">
+    <div class="cart-total-row">
+      <span>Subtotal</span>
+      <span id="cartDrawerTotal">₹0</span>
+    </div>
+    <button class="btn-primary-coral" onclick="proceedToCheckout()">Proceed to Checkout</button>
+  </div>
+</aside>
+
+<!-- ─── AUTHENTICATION MODAL ─── -->
+<div class="modal-overlay" id="authModal">
+  <div class="modal-content" style="max-width: 440px;">
+    <button class="modal-close" onclick="closeModal('authModal')">&times;</button>
+    <h2 class="modal-title" id="authTitle" style="text-align:center;">Sign In</h2>
+
+    <div class="quick-auth-options">
+      <button class="quick-auth-btn" onclick="quickLogin('user@pageturner.com', 'password123')">
+        Demo User
+      </button>
+      <button class="quick-auth-btn" onclick="quickLogin('admin@pageturner.com', 'password123')">
+        Demo Admin
+      </button>
+    </div>
+
+    <form id="authForm" onsubmit="handleAuthSubmit(event)">
+      <div class="form-group" id="nameGroup" style="display:none;">
+        <label>Full Name</label>
+        <input type="text" class="form-control" id="authName" placeholder="Joshua J">
+      </div>
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" class="form-control" id="authEmail" required placeholder="user@pageturner.com">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" class="form-control" id="authPassword" required placeholder="••••••••">
+      </div>
+      <button type="submit" class="btn-primary-coral" id="authSubmitBtn" style="margin-top:0.5rem;">Sign In</button>
+    </form>
+    <p style="text-align:center; margin-top:1.25rem; font-size:0.82rem; color:var(--text-muted);" id="authToggleText">
+      Don't have an account? <a href="#" onclick="switchAuthMode('register')" style="color:var(--primary-coral); font-weight:700;">Sign up</a>
+    </p>
+  </div>
+</div>
+
+<!-- ─── BOOK DETAIL & REVIEWS MODAL ─── -->
+<div class="modal-overlay" id="bookModal">
+  <div class="modal-content" style="max-width: 720px;">
+    <button class="modal-close" onclick="closeModal('bookModal')">&times;</button>
+    <div id="bookModalBody"></div>
+  </div>
+</div>
+
+<!-- ─── CHECKOUT MODAL (RAZORPAY) ─── -->
+<div class="modal-overlay" id="checkoutModal">
+  <div class="modal-content" style="max-width: 480px;">
+    <button class="modal-close" onclick="closeModal('checkoutModal')">&times;</button>
+    <h2 class="modal-title">Checkout</h2>
+    <form id="checkoutForm" onsubmit="handleCheckoutSubmit(event)">
+      <div class="form-group">
+        <label>Street Address</label>
+        <input type="text" class="form-control" id="shipStreet" required value="742 Evergreen Terrace">
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+        <div class="form-group">
+          <label>City</label>
+          <input type="text" class="form-control" id="shipCity" required value="Mumbai">
+        </div>
+        <div class="form-group">
+          <label>State</label>
+          <input type="text" class="form-control" id="shipState" required value="Maharashtra">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Postal Code</label>
+        <input type="text" class="form-control" id="shipZip" required value="400001">
+      </div>
+
+      <div class="checkout-summary">
+        <div class="amount-row">
+          <span>Total Payable</span>
+          <span id="checkoutAmount">₹0</span>
+        </div>
+        <p class="info-text">Secure transaction verified with HMAC-SHA256 signature.</p>
+      </div>
+
+      <button type="submit" class="btn-primary-coral" style="margin-bottom:0.6rem;">Pay with Razorpay</button>
+      <button type="button" class="btn-outline" style="width:100%;" onclick="simulateMockPayment()">Instant Sandbox Verification</button>
+    </form>
+  </div>
+</div>
+
+<!-- ─── ORDERS / LIBRARY MODAL ─── -->
+<div class="modal-overlay" id="ordersModal">
+  <div class="modal-content" style="max-width: 620px;">
+    <button class="modal-close" onclick="closeModal('ordersModal')">&times;</button>
+    <h2 class="modal-title">My Library &amp; Orders</h2>
+    <div id="ordersList"></div>
+  </div>
+</div>
+
+<!-- ─── FAVOURITES / WISHLIST MODAL ─── -->
+<div class="modal-overlay" id="favouritesModal">
+  <div class="modal-content" style="max-width: 680px;">
+    <button class="modal-close" onclick="closeModal('favouritesModal')">&times;</button>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+      <h2 class="modal-title" style="margin-bottom:0;"><i class="fa-solid fa-heart" style="color:#ff6b6b;"></i> My Favourites &amp; Wishlist</h2>
+      <span style="font-size:0.8rem; font-weight:700; color:var(--text-muted);" id="favModalCount">0 items</span>
+    </div>
+    <div id="favouritesModalBody"></div>
+  </div>
+</div>
+
+<!-- ─── READING & BROWSING HISTORY MODAL ─── -->
+<div class="modal-overlay" id="historyModal">
+  <div class="modal-content" style="max-width: 680px;">
+    <button class="modal-close" onclick="closeModal('historyModal')">&times;</button>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+      <h2 class="modal-title" style="margin-bottom:0;"><i class="fa-solid fa-book-bookmark" style="color:var(--text-dark);"></i> Reading &amp; Browsing History</h2>
+      <button class="btn-outline" style="padding:0.25rem 0.65rem; font-size:0.75rem;" onclick="clearReadingHistory()">Clear History</button>
+    </div>
+    <div id="historyModalBody"></div>
+  </div>
+</div>
+
+<!-- ─── SCHEDULED DROPS MODAL ─── -->
+<div class="modal-overlay" id="scheduledDropsModal">
+  <div class="modal-content" style="max-width: 640px;">
+    <button class="modal-close" onclick="closeModal('scheduledDropsModal')">&times;</button>
+    <h2 class="modal-title"><i class="fa-solid fa-clock-rotate-left" style="color:var(--primary-coral);"></i> Scheduled Releases &amp; Drops</h2>
+    <p style="font-size:0.82rem; color:var(--text-mid); margin-bottom:1.25rem;">These exclusive titles are scheduled to go live in 2 days. Reserve yours now to get notified first!</p>
+    <div id="scheduledDropsModalBody"></div>
+  </div>
+</div>
+
+
+<!-- ─── ADMIN CATALOG MANAGER ─── -->
+<div class="modal-overlay" id="adminModal">
+  <div class="modal-content" style="max-width: 680px;">
+    <button class="modal-close" onclick="closeModal('adminModal')">&times;</button>
+    <h2 class="modal-title">PageTurner Admin Manager</h2>
+    <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:1.5rem;">Upload book covers (Firebase Storage) and maintain books catalog.</p>
+
+    <form id="adminBookForm" onsubmit="handleAdminBookSubmit(event)">
+      <input type="hidden" id="adminBookId">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+        <div class="form-group">
+          <label>Title</label>
+          <input type="text" class="form-control" id="adminTitle" required>
+        </div>
+        <div class="form-group">
+          <label>Author</label>
+          <input type="text" class="form-control" id="adminAuthor" required>
+        </div>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:1rem;">
+        <div class="form-group">
+          <label>Genre / Category</label>
+          <select class="form-control" id="adminGenre">
+            <option value="Fiction">Fiction</option>
+            <option value="Self-Help">Self-Help</option>
+            <option value="Tech">Tech</option>
+            <option value="Mystery">Mystery</option>
+            <option value="Fantasy">Fantasy</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Price (₹)</label>
+          <input type="number" class="form-control" id="adminPrice" required min="0">
+        </div>
+        <div class="form-group">
+          <label>Stock</label>
+          <input type="number" class="form-control" id="adminStock" required min="0" value="10">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea class="form-control" id="adminDescription" rows="3" required></textarea>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+        <div class="form-group">
+          <label>Cover File (Firebase Upload)</label>
+          <input type="file" class="form-control" id="adminCoverFile" accept="image/*">
+        </div>
+        <div class="form-group">
+          <label>Or Image URL</label>
+          <input type="text" class="form-control" id="adminCoverUrl" placeholder="https://...">
+        </div>
+      </div>
+      <div style="display:flex; gap:0.75rem;">
+        <button type="submit" class="btn-primary-coral" style="width:auto;" id="adminFormSubmitBtn">Save Book</button>
+        <button type="button" class="btn-outline" onclick="resetAdminForm()">Clear</button>
+      </div>
+    </form>
+
+    <hr style="border:none; border-top:1px solid var(--border-subtle); margin:1.5rem 0;">
+    <h3 style="font-size:1.05rem; margin-bottom:1rem;">Current Catalog Items</h3>
+    <div id="adminBooksList"></div>
+  </div>
+</div>
+
+<!-- ─── TOAST NOTIFICATION ─── -->
+<div class="toast-notice" id="toastNotice">
+  <i class="fa-solid fa-circle-check"></i>
+  <span id="toastNoticeMsg">Success</span>
+</div>
+
+<script src="js/app.js"></script>
+</body>
+</html>
